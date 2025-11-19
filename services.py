@@ -84,8 +84,15 @@ def verify_payment(order_id, merchant_id, merchant_key):
         return None, "Invalid credentials"
     
     # Simulate payment verification (in production, check with payment gateway)
+    # For demo: 80% success, 10% failure, 10% pending
     if transaction.status == "PENDING":
-        payment_status = random.choice(["TXN_SUCCESS", "TXN_FAILURE", "PENDING"])
+        rand = random.random()
+        if rand < 0.8:  # 80% success rate
+            payment_status = "TXN_SUCCESS"
+        elif rand < 0.9:  # 10% failure rate
+            payment_status = "TXN_FAILURE"
+        else:  # 10% still pending
+            payment_status = "PENDING"
         
         if payment_status == "TXN_SUCCESS":
             transaction.status = "SUCCESS"

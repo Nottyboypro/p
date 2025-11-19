@@ -28,7 +28,9 @@ BharatPay is a **professional-grade UPI payment gateway service** that provides 
 ├── services.py             # Business logic (QR generation, payment processing)
 ├── main.py                 # Entry point for database initialization
 ├── static/
-│   ├── index.html          # React admin panel SPA
+│   ├── home.html           # Homepage / Landing page
+│   ├── admin.html          # React admin panel SPA
+│   ├── playground.html     # Interactive API testing playground
 │   └── docs.html           # Developer documentation page
 ├── requirements.txt        # Python dependencies
 ├── .gitignore             # Git ignore rules
@@ -64,7 +66,13 @@ Old files (backed up):
 
 ## Key Features
 
-### 1. Admin Panel (http://localhost:5000/)
+### 1. Homepage (http://localhost:5000/)
+- **Beautiful Landing Page:** Modern gradient design
+- **Feature Showcase:** Complete overview of capabilities
+- **Quick Start:** Direct links to Playground, Admin, and Documentation
+- **Live Status:** Real-time API status indicator
+
+### 2. Admin Panel (http://localhost:5000/admin)
 - **Login:** Secure JWT-based authentication
 - **Dashboard:** Real-time statistics
   - Total transactions, successful payments, revenue
@@ -80,7 +88,20 @@ Old files (backed up):
   - Filter by status, date, amount
   - Search by order ID
 
-### 2. Developer API (Requires API Key)
+### 3. Developer Playground (http://localhost:5000/playground)
+- **Interactive Testing:** No API key needed (demo mode)
+- **QR Generation Tester:**
+  - Enter UPI ID, amount, message
+  - Get instant QR code
+  - See live API response
+- **Payment Verification Tester:**
+  - Auto-fill from generated QR
+  - Test payment status (80% success rate simulation)
+  - Real-time status display
+- **Code Examples:** Auto-generated cURL commands
+- **Live Response Viewer:** Formatted JSON output
+
+### 4. Developer API (Requires API Key)
 - **QR Generation:** `/api/v1/qr/generate`
   - Creates UPI QR codes instantly
   - Returns base64-encoded PNG
@@ -94,13 +115,13 @@ Old files (backed up):
   - Create shareable payment pages
   - Customizable limits and expiry
 
-### 3. User-Facing Pages
+### 5. User-Facing Pages
 - **Payment Link Pages:** `/pay/{link_id}`
   - Beautiful, mobile-friendly UI
   - QR code generation
   - Real-time status updates
 
-### 4. Security Features
+### 6. Security Features
 - API key authentication with hashing
 - Rate limiting (100 QR/hour, 200 verify/hour)
 - Admin JWT tokens with 24h expiry
@@ -131,6 +152,12 @@ curl -X POST http://localhost:5000/api/v1/qr/generate \
 ```
 
 ## Recent Changes
+
+### 2025-11-19 (Latest): Bug Fixes & Improvements
+- **Fixed:** Documentation button now works correctly (static file routing fixed)
+- **Fixed:** Payment verification success rate improved to 80% (was 33% before)
+- **Added:** Demo mode support with `X-API-Key: demo-mode` for testing
+- **Improved:** Payment simulation logic for better demo experience
 
 ### 2025-11-19: Complete System Overhaul
 - **Architecture:** Restructured from simple API to production service
