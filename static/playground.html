@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatPay - API Playground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl">🚀</span>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">BharatPay Playground</h1>
+                </div>
+                <div class="flex gap-4">
+                    <a href="/" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition">Home</a>
+                    <a href="/static/docs.html" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition">Docs</a>
+                    <a href="/admin" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition">Admin</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-7xl">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-gray-900 mb-4">🎮 API Testing Playground</h1>
+            <p class="text-xl text-gray-600">Test BharatPay API endpoints in real-time without writing any code!</p>
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg inline-block">
+                <p class="text-sm text-blue-800">
+                    <strong>Note:</strong> This playground uses a demo mode. For production, get your API key from the <a href="/admin" class="underline">Admin Panel</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column - API Testing -->
+            <div class="space-y-6">
+                <!-- Test 1: Generate QR Code -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <span>💳</span> Generate Payment QR
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">UPI ID</label>
+                            <input
+                                type="text"
+                                id="upi-input"
+                                value="test@bharatpay"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="merchant@upi"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Amount (₹)</label>
+                            <input
+                                type="number"
+                                id="amount-input"
+                                value="500"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="500"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Message</label>
+                            <input
+                                type="text"
+                                id="message-input"
+                                value="Test Payment"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Payment for Order #123"
+                            />
+                        </div>
+                        
+                        <button
+                            onclick="generateQR()"
+                            class="w-full px-6 py-3 gradient-bg text-white rounded-lg hover:opacity-90 transition font-bold"
+                        >
+                            🎯 Generate QR Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test 2: Verify Payment -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <span>✅</span> Verify Payment
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Order ID</label>
+                            <input
+                                type="text"
+                                id="order-id-input"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="BHARAT_ORD_..."
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Merchant ID</label>
+                            <input
+                                type="text"
+                                id="merchant-id-input"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="BHARAT_..."
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Merchant Key</label>
+                            <input
+                                type="text"
+                                id="merchant-key-input"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="BHARAT_KEY_..."
+                            />
+                        </div>
+                        
+                        <button
+                            onclick="verifyPayment()"
+                            class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:opacity-90 transition font-bold"
+                        >
+                            🔍 Verify Payment Status
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Fill Button -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <p class="text-sm text-yellow-800 mb-2">
+                        <strong>💡 Tip:</strong> Generate a QR first, then use those credentials to verify payment!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column - Results -->
+            <div class="space-y-6">
+                <!-- QR Code Display -->
+                <div id="qr-result" class="bg-white rounded-xl shadow-lg p-6 hidden">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">QR Code Generated ✅</h3>
+                    
+                    <div class="text-center mb-4">
+                        <img id="qr-image" class="max-w-xs mx-auto border-4 border-blue-500 rounded-lg" />
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="p-3 bg-blue-50 rounded">
+                            <strong>Order ID:</strong>
+                            <div class="font-mono text-xs break-all" id="result-order-id"></div>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded">
+                            <strong>Amount:</strong>
+                            <div class="font-mono" id="result-amount"></div>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded">
+                            <strong>Merchant ID:</strong>
+                            <div class="font-mono text-xs break-all" id="result-merchant-id"></div>
+                        </div>
+                        <div class="p-3 bg-pink-50 rounded">
+                            <strong>Merchant Key:</strong>
+                            <div class="font-mono text-xs break-all" id="result-merchant-key"></div>
+                        </div>
+                    </div>
+                    
+                    <button
+                        onclick="autoFillVerify()"
+                        class="w-full mt-4 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold"
+                    >
+                        ⚡ Auto-fill Verify Form
+                    </button>
+                </div>
+
+                <!-- API Response -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">📡 API Response</h3>
+                    
+                    <div id="response-container" class="min-h-[200px]">
+                        <div class="text-center text-gray-400 py-12">
+                            Make an API request to see the response here
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Example -->
+                <div class="bg-gray-900 rounded-xl shadow-lg p-6 text-white">
+                    <h3 class="text-xl font-bold mb-4">💻 Equivalent cURL Command</h3>
+                    <pre id="curl-command" class="text-xs">// Make a request to see the cURL command</pre>
+                </div>
+
+                <!-- Stats -->
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                    <h3 class="text-xl font-bold mb-4">📊 Quick Stats</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">< 1s</div>
+                            <div class="text-sm">Response Time</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold">100%</div>
+                            <div class="text-sm">Uptime</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints Reference -->
+        <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Available API Endpoints</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">POST</span>
+                        <code class="text-sm">/api/v1/qr/generate</code>
+                    </div>
+                    <p class="text-sm text-gray-600">Generate UPI QR code for payment</p>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">POST</span>
+                        <code class="text-sm">/api/v1/payment/verify</code>
+                    </div>
+                    <p class="text-sm text-gray-600">Verify payment transaction status</p>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">POST</span>
+                        <code class="text-sm">/api/v1/payment-link/create</code>
+                    </div>
+                    <p class="text-sm text-gray-600">Create shareable payment link</p>
+                </div>
+                
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">GET</span>
+                        <code class="text-sm">/api/docs</code>
+                    </div>
+                    <p class="text-sm text-gray-600">Complete API documentation</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastPaymentData = null;
+
+        async function generateQR() {
+            const upi = document.getElementById('upi-input').value;
+            const amount = document.getElementById('amount-input').value;
+            const message = document.getElementById('message-input').value;
+
+            if (!upi || !amount) {
+                alert('Please fill UPI ID and Amount');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('response-container').innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-spin text-4xl mb-4">⏳</div>
+                    <p class="text-gray-600">Generating QR code...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/v1/qr/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'demo-mode'  // Demo mode
+                    },
+                    body: JSON.stringify({ upi, amount, message })
+                });
+
+                const data = await response.json();
+                lastPaymentData = data;
+
+                // Display response
+                document.getElementById('response-container').innerHTML = `
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+                // Show curl command
+                document.getElementById('curl-command').textContent = `curl -X POST ${window.location.origin}/api/v1/qr/generate \\
+  -H "X-API-Key: your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "upi": "${upi}",
+    "amount": ${amount},
+    "message": "${message}"
+  }'`;
+
+                if (data.success) {
+                    // Display QR code
+                    document.getElementById('qr-result').classList.remove('hidden');
+                    document.getElementById('qr-image').src = 'data:image/png;base64,' + data.qr_code;
+                    document.getElementById('result-order-id').textContent = data.order_id;
+                    document.getElementById('result-amount').textContent = '₹' + data.amount;
+                    document.getElementById('result-merchant-id').textContent = data.merchant_id;
+                    document.getElementById('result-merchant-key').textContent = data.merchant_key;
+
+                    // Scroll to results
+                    document.getElementById('qr-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            } catch (error) {
+                document.getElementById('response-container').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <div class="text-4xl mb-4">❌</div>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function autoFillVerify() {
+            if (lastPaymentData) {
+                document.getElementById('order-id-input').value = lastPaymentData.order_id;
+                document.getElementById('merchant-id-input').value = lastPaymentData.merchant_id;
+                document.getElementById('merchant-key-input').value = lastPaymentData.merchant_key;
+                
+                // Scroll to verify section
+                document.getElementById('order-id-input').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Highlight the form
+                const verifySection = document.getElementById('order-id-input').closest('.bg-white');
+                verifySection.classList.add('ring-4', 'ring-purple-400');
+                setTimeout(() => verifySection.classList.remove('ring-4', 'ring-purple-400'), 2000);
+            }
+        }
+
+        async function verifyPayment() {
+            const orderId = document.getElementById('order-id-input').value;
+            const merchantId = document.getElementById('merchant-id-input').value;
+            const merchantKey = document.getElementById('merchant-key-input').value;
+
+            if (!orderId || !merchantId || !merchantKey) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('response-container').innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-spin text-4xl mb-4">⏳</div>
+                    <p class="text-gray-600">Verifying payment...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/v1/payment/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'demo-mode'  // Demo mode
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        merchant_id: merchantId,
+                        merchant_key: merchantKey
+                    })
+                });
+
+                const data = await response.json();
+
+                // Display response
+                let statusColor = 'gray';
+                let statusEmoji = '⏳';
+                if (data.status === 'SUCCESS') {
+                    statusColor = 'green';
+                    statusEmoji = '✅';
+                } else if (data.status === 'FAILED') {
+                    statusColor = 'red';
+                    statusEmoji = '❌';
+                }
+
+                document.getElementById('response-container').innerHTML = `
+                    <div class="p-6 bg-${statusColor}-50 border-2 border-${statusColor}-200 rounded-lg mb-4">
+                        <div class="text-center text-4xl mb-2">${statusEmoji}</div>
+                        <div class="text-center text-xl font-bold text-${statusColor}-800">
+                            Payment ${data.status}
+                        </div>
+                    </div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+
+                // Show curl command
+                document.getElementById('curl-command').textContent = `curl -X POST ${window.location.origin}/api/v1/payment/verify \\
+  -H "X-API-Key: your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "order_id": "${orderId}",
+    "merchant_id": "${merchantId}",
+    "merchant_key": "${merchantKey}"
+  }'`;
+
+            } catch (error) {
+                document.getElementById('response-container').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <div class="text-4xl mb-4">❌</div>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

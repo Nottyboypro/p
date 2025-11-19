@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatPay Admin Panel</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        // API Helper
+        const API_BASE = '/api';
+        
+        const api = {
+            login: async (username, password) => {
+                const res = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                return res.json();
+            },
+            
+            verify: async (token) => {
+                const res = await fetch(`${API_BASE}/admin/verify`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            },
+            
+            getStats: async (token) => {
+                const res = await fetch(`${API_BASE}/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            },
+            
+            getApiKeys: async (token) => {
+                const res = await fetch(`${API_BASE}/admin/api-keys`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            },
+            
+            createApiKey: async (token, owner_name, expiry_days) => {
+                const res = await fetch(`${API_BASE}/admin/api-keys`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ owner_name, expiry_days })
+                });
+                return res.json();
+            },
+            
+            deleteApiKey: async (token, keyId) => {
+                const res = await fetch(`${API_BASE}/admin/api-keys/${keyId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            },
+            
+            toggleApiKey: async (token, keyId) => {
+                const res = await fetch(`${API_BASE}/admin/api-keys/${keyId}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            },
+            
+            getTransactions: async (token, page = 1) => {
+                const res = await fetch(`${API_BASE}/admin/transactions?page=${page}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                return res.json();
+            }
+        };
+        
+        // Login Component
+        function Login({ onLogin }) {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                setLoading(true);
+                
+                try {
+                    const result = await api.login(username, password);
+                    if (result.success) {
+                        localStorage.setItem('token', result.access_token);
+                        localStorage.setItem('username', result.username);
+                        onLogin(result.access_token);
+                    } else {
+                        setError(result.error || 'Login failed');
+                    }
+                } catch (err) {
+                    setError('Network error. Please try again.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md fade-in">
+                        <div className="text-center mb-8">
+                            <h1 className="text-4xl font-bold text-gray-800 mb-2">🚀 BharatPay</h1>
+                            <p className="text-gray-600">Admin Panel Login</p>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Username
+                                </label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter username"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="mb-6">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter password"
+                                    required
+                                />
+                            </div>
+                            
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                                    {error}
+                                </div>
+                            )}
+                            
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:opacity-50"
+                            >
+                                {loading ? 'Logging in...' : 'Login'}
+                            </button>
+                        </form>
+                        
+                        <div className="mt-6 text-center text-sm text-gray-600">
+                            <p>Default: admin / admin123</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
+        // Dashboard Component
+        function Dashboard({ token, stats, onRefresh }) {
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+                    <StatCard
+                        title="Total Transactions"
+                        value={stats.total_transactions}
+                        icon="💳"
+                        color="blue"
+                    />
+                    <StatCard
+                        title="Successful Payments"
+                        value={stats.successful_payments}
+                        icon="✅"
+                        color="green"
+                    />
+                    <StatCard
+                        title="Total Revenue"
+                        value={`₹${stats.total_amount.toFixed(2)}`}
+                        icon="💰"
+                        color="yellow"
+                    />
+                    <StatCard
+                        title="Active API Keys"
+                        value={`${stats.active_api_keys}/${stats.total_api_keys}`}
+                        icon="🔑"
+                        color="purple"
+                    />
+                </div>
+            );
+        }
+        
+        function StatCard({ title, value, icon, color }) {
+            const colors = {
+                blue: 'bg-blue-500',
+                green: 'bg-green-500',
+                yellow: 'bg-yellow-500',
+                purple: 'bg-purple-500'
+            };
+            
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-600 text-sm mb-1">{title}</p>
+                            <p className="text-3xl font-bold text-gray-800">{value}</p>
+                        </div>
+                        <div className={`${colors[color]} text-white p-4 rounded-lg text-3xl`}>
+                            {icon}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        
+        // API Keys Component
+        function ApiKeys({ token }) {
+            const [apiKeys, setApiKeys] = useState([]);
+            const [showForm, setShowForm] = useState(false);
+            const [ownerName, setOwnerName] = useState('');
+            const [expiryDays, setExpiryDays] = useState('365');
+            const [newKey, setNewKey] = useState(null);
+            
+            useEffect(() => {
+                loadApiKeys();
+            }, []);
+            
+            const loadApiKeys = async () => {
+                const result = await api.getApiKeys(token);
+                if (result.success) {
+                    setApiKeys(result.api_keys);
+                }
+            };
+            
+            const handleCreate = async (e) => {
+                e.preventDefault();
+                const result = await api.createApiKey(token, ownerName, expiryDays);
+                if (result.success) {
+                    setNewKey(result.api_key);
+                    setOwnerName('');
+                    setExpiryDays('365');
+                    setShowForm(false);
+                    loadApiKeys();
+                }
+            };
+            
+            const handleDelete = async (keyId) => {
+                if (confirm('Are you sure you want to delete this API key?')) {
+                    await api.deleteApiKey(token, keyId);
+                    loadApiKeys();
+                }
+            };
+            
+            const handleToggle = async (keyId) => {
+                await api.toggleApiKey(token, keyId);
+                loadApiKeys();
+            };
+            
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6 fade-in">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">🔑 API Keys</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                        >
+                            + Create New
+                        </button>
+                    </div>
+                    
+                    {showForm && (
+                        <form onSubmit={handleCreate} className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        Owner Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={ownerName}
+                                        onChange={(e) => setOwnerName(e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="e.g., John's App"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        Expiry (Days)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={expiryDays}
+                                        onChange={(e) => setExpiryDays(e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        min="1"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                                <button
+                                    type="submit"
+                                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+                                >
+                                    Create
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    className="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                    
+                    {newKey && (
+                        <div className="mb-6 p-4 bg-green-50 border-2 border-green-500 rounded-lg">
+                            <p className="font-bold text-green-800 mb-2">✅ API Key Created!</p>
+                            <p className="text-sm text-gray-700 mb-2">Save this key securely. It won't be shown again!</p>
+                            <div className="bg-white p-3 rounded border border-green-300 font-mono text-sm break-all">
+                                {newKey}
+                            </div>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(newKey);
+                                    alert('Copied to clipboard!');
+                                }}
+                                className="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+                            >
+                                📋 Copy to Clipboard
+                            </button>
+                            <button
+                                onClick={() => setNewKey(null)}
+                                className="mt-3 ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 text-sm"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    )}
+                    
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b-2 border-gray-200">
+                                    <th className="text-left py-3 px-4 text-gray-700">Owner</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Key Prefix</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Status</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Requests</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Expires</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {apiKeys.map((key) => (
+                                    <tr key={key.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                        <td className="py-3 px-4 font-medium">{key.owner_name}</td>
+                                        <td className="py-3 px-4 font-mono text-sm">{key.key_prefix}...</td>
+                                        <td className="py-3 px-4">
+                                            {key.is_expired ? (
+                                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Expired</span>
+                                            ) : key.is_active ? (
+                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Active</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">Inactive</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-4">{key.total_requests}</td>
+                                        <td className="py-3 px-4 text-sm">{new Date(key.expires_at).toLocaleDateString()}</td>
+                                        <td className="py-3 px-4">
+                                            <button
+                                                onClick={() => handleToggle(key.id)}
+                                                className="text-blue-600 hover:text-blue-800 mr-3"
+                                            >
+                                                {key.is_active ? 'Deactivate' : 'Activate'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(key.id)}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        
+                        {apiKeys.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                                No API keys yet. Create your first one!
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+        
+        // Transactions Component
+        function Transactions({ token }) {
+            const [transactions, setTransactions] = useState([]);
+            const [page, setPage] = useState(1);
+            const [totalPages, setTotalPages] = useState(1);
+            
+            useEffect(() => {
+                loadTransactions();
+            }, [page]);
+            
+            const loadTransactions = async () => {
+                const result = await api.getTransactions(token, page);
+                if (result.success) {
+                    setTransactions(result.transactions);
+                    setTotalPages(result.pages);
+                }
+            };
+            
+            return (
+                <div className="bg-white rounded-xl shadow-lg p-6 fade-in">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">💳 Recent Transactions</h2>
+                    
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b-2 border-gray-200">
+                                    <th className="text-left py-3 px-4 text-gray-700">Order ID</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Amount</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">UPI</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Status</th>
+                                    <th className="text-left py-3 px-4 text-gray-700">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((txn) => (
+                                    <tr key={txn.id} className="border-b border-gray-100 hover:bg-gray-50">
+                                        <td className="py-3 px-4 font-mono text-sm">{txn.order_id}</td>
+                                        <td className="py-3 px-4 font-bold">₹{txn.amount}</td>
+                                        <td className="py-3 px-4 text-sm">{txn.upi_id}</td>
+                                        <td className="py-3 px-4">
+                                            {txn.status === 'SUCCESS' && (
+                                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Success</span>
+                                            )}
+                                            {txn.status === 'PENDING' && (
+                                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">Pending</span>
+                                            )}
+                                            {txn.status === 'FAILED' && (
+                                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Failed</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-4 text-sm">{new Date(txn.created_at).toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        
+                        {transactions.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                                No transactions yet
+                            </div>
+                        )}
+                    </div>
+                    
+                    {totalPages > 1 && (
+                        <div className="mt-6 flex justify-center gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="px-4 py-2">Page {page} of {totalPages}</span>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        // Main App
+        function App() {
+            const [token, setToken] = useState(localStorage.getItem('token'));
+            const [username, setUsername] = useState(localStorage.getItem('username'));
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [stats, setStats] = useState({
+                total_transactions: 0,
+                total_api_keys: 0,
+                active_api_keys: 0,
+                successful_payments: 0,
+                pending_payments: 0,
+                failed_payments: 0,
+                total_amount: 0
+            });
+            
+            useEffect(() => {
+                if (token) {
+                    loadStats();
+                }
+            }, [token]);
+            
+            const loadStats = async () => {
+                const result = await api.getStats(token);
+                if (result.success) {
+                    setStats(result.stats);
+                }
+            };
+            
+            const handleLogout = () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                setToken(null);
+                setUsername(null);
+            };
+            
+            if (!token) {
+                return <Login onLogin={setToken} />;
+            }
+            
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    <nav className="bg-white shadow-lg">
+                        <div className="container mx-auto px-6 py-4">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center">
+                                    <h1 className="text-2xl font-bold text-blue-600">🚀 BharatPay Admin</h1>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-gray-700">Welcome, {username}</span>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                    
+                    <div className="container mx-auto px-6 py-8">
+                        <div className="flex gap-4 mb-8">
+                            <button
+                                onClick={() => setActiveTab('dashboard')}
+                                className={`px-6 py-2 rounded-lg font-medium ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                📊 Dashboard
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('api-keys')}
+                                className={`px-6 py-2 rounded-lg font-medium ${activeTab === 'api-keys' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                🔑 API Keys
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('transactions')}
+                                className={`px-6 py-2 rounded-lg font-medium ${activeTab === 'transactions' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                💳 Transactions
+                            </button>
+                        </div>
+                        
+                        {activeTab === 'dashboard' && <Dashboard token={token} stats={stats} onRefresh={loadStats} />}
+                        {activeTab === 'api-keys' && <ApiKeys token={token} />}
+                        {activeTab === 'transactions' && <Transactions token={token} />}
+                    </div>
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

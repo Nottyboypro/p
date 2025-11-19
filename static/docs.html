@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatPay - Developer Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold">🚀 BharatPay</h1>
+                <div class="flex gap-4">
+                    <a href="/" class="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100">Admin Panel</a>
+                    <a href="/api/docs" class="px-4 py-2 bg-blue-700 rounded-lg hover:bg-blue-800">API Docs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12 max-w-5xl">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-bold text-gray-900 mb-4">Developer Documentation</h1>
+            <p class="text-xl text-gray-600">Professional UPI Payment Gateway API for Developers</p>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">⚡ Quick Start</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">1. Get Your API Key</h3>
+                    <p class="text-gray-600 mb-2">Login to the admin panel and create an API key:</p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
+                        <li>Go to Admin Panel</li>
+                        <li>Navigate to "API Keys" tab</li>
+                        <li>Click "Create New"</li>
+                        <li>Enter owner name and expiry days</li>
+                        <li>Copy your API key (shown only once!)</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">2. Make Your First Payment Request</h3>
+                    <pre><code>curl -X POST https://your-domain.com/api/v1/qr/generate \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "upi": "merchant@upi",
+    "amount": 500,
+    "message": "Test Payment"
+  }'</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">3. Display QR Code to Customer</h3>
+                    <p class="text-gray-600">The response includes a base64-encoded QR code image that you can display directly:</p>
+                    <pre><code>&lt;img src="data:image/png;base64,{qr_code}" alt="Payment QR" /&gt;</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">4. Verify Payment Status</h3>
+                    <pre><code>curl -X POST https://your-domain.com/api/v1/payment/verify \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "order_id": "BHARAT_ORD_...",
+    "merchant_id": "BHARAT_...",
+    "merchant_key": "BHARAT_KEY_..."
+  }'</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="text-4xl mb-4">🔐</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Secure Authentication</h3>
+                <p class="text-gray-600">API key-based authentication with rate limiting and usage tracking</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="text-4xl mb-4">📱</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">UPI QR Codes</h3>
+                <p class="text-gray-600">Generate instant UPI QR codes compatible with all payment apps</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="text-4xl mb-4">🔗</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Payment Links</h3>
+                <p class="text-gray-600">Create shareable payment pages with custom amounts and descriptions</p>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">🔌 API Endpoints</h2>
+            
+            <div class="space-y-8">
+                <!-- Generate QR -->
+                <div class="border-l-4 border-blue-500 pl-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded font-bold text-sm">POST</span>
+                        <code class="text-lg font-mono">/api/v1/qr/generate</code>
+                    </div>
+                    <p class="text-gray-600 mb-3">Generate a UPI QR code for payment</p>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-3">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Request Body:</p>
+                        <pre class="text-sm"><code>{
+  "upi": "merchant@upi",           // Required: Your UPI ID
+  "amount": 500,                   // Required: Amount in ₹
+  "message": "Order #12345",       // Optional: Payment description
+  "order_id": "CUSTOM_ORD_123",    // Optional: Custom order ID
+  "webhook_url": "https://..."     // Optional: Webhook for status updates
+}</code></pre>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Response:</p>
+                        <pre class="text-sm"><code>{
+  "success": true,
+  "order_id": "BHARAT_ORD_1700485678_1234",
+  "qr_code": "base64_encoded_image...",
+  "amount": 500,
+  "status": "PENDING",
+  "merchant_id": "BHARAT_xyz...",
+  "merchant_key": "BHARAT_KEY_123..."
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Verify Payment -->
+                <div class="border-l-4 border-purple-500 pl-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded font-bold text-sm">POST</span>
+                        <code class="text-lg font-mono">/api/v1/payment/verify</code>
+                    </div>
+                    <p class="text-gray-600 mb-3">Verify the status of a payment</p>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-3">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Request Body:</p>
+                        <pre class="text-sm"><code>{
+  "order_id": "BHARAT_ORD_1700485678_1234",
+  "merchant_id": "BHARAT_xyz...",
+  "merchant_key": "BHARAT_KEY_123..."
+}</code></pre>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Response (if successful):</p>
+                        <pre class="text-sm"><code>{
+  "success": true,
+  "order_id": "BHARAT_ORD_1700485678_1234",
+  "status": "SUCCESS",
+  "amount": 500,
+  "bharatpay_reference": "BHARAT1700485765123456",
+  "bank_reference": "BANK987654321"
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Create Payment Link -->
+                <div class="border-l-4 border-yellow-500 pl-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded font-bold text-sm">POST</span>
+                        <code class="text-lg font-mono">/api/v1/payment-link/create</code>
+                    </div>
+                    <p class="text-gray-600 mb-3">Create a shareable payment link</p>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg mb-3">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Request Body:</p>
+                        <pre class="text-sm"><code>{
+  "upi": "merchant@upi",
+  "amount": 299,
+  "description": "Premium Subscription",
+  "max_uses": 100,              // Optional
+  "expires_in_hours": 168       // Optional (default: never)
+}</code></pre>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm font-bold text-gray-700 mb-2">Response:</p>
+                        <pre class="text-sm"><code>{
+  "success": true,
+  "link_id": "link_abc123...",
+  "payment_url": "https://your-domain.com/pay/link_abc123...",
+  "amount": 299,
+  "description": "Premium Subscription"
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">💻 Code Examples</h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Python</h3>
+                    <pre><code>import requests
+
+API_KEY = "your_api_key_here"
+BASE_URL = "https://your-domain.com"
+
+# Generate payment QR
+response = requests.post(
+    f"{BASE_URL}/api/v1/qr/generate",
+    headers={"X-API-Key": API_KEY},
+    json={
+        "upi": "merchant@upi",
+        "amount": 500,
+        "message": "Order Payment"
+    }
+)
+
+payment = response.json()
+print(f"Order ID: {payment['order_id']}")
+print(f"QR Code: {payment['qr_code'][:50]}...")</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">JavaScript/Node.js</h3>
+                    <pre><code>const apiKey = 'your_api_key_here';
+const baseUrl = 'https://your-domain.com';
+
+async function createPayment(upi, amount, message) {
+  const response = await fetch(`${baseUrl}/api/v1/qr/generate`, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': apiKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ upi, amount, message })
+  });
+  
+  const payment = await response.json();
+  return payment;
+}
+
+createPayment('merchant@upi', 500, 'Order Payment')
+  .then(data => console.log('Payment created:', data.order_id));</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">PHP</h3>
+                    <pre><code>&lt;?php
+$apiKey = 'your_api_key_here';
+$baseUrl = 'https://your-domain.com';
+
+$data = [
+    'upi' => 'merchant@upi',
+    'amount' => 500,
+    'message' => 'Order Payment'
+];
+
+$ch = curl_init("$baseUrl/api/v1/qr/generate");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'X-API-Key: ' . $apiKey,
+    'Content-Type: application/json'
+]);
+
+$response = curl_exec($ch);
+$payment = json_decode($response, true);
+
+echo "Order ID: " . $payment['order_id'];
+?&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limits & Best Practices -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">⚡ Rate Limits</h3>
+                <ul class="space-y-2 text-gray-700">
+                    <li>• QR Generation: 100 requests/hour</li>
+                    <li>• Payment Verification: 200 requests/hour</li>
+                    <li>• Payment Links: 50 creations/hour</li>
+                    <li>• Limits are per API key</li>
+                </ul>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">🛡️ Security Best Practices</h3>
+                <ul class="space-y-2 text-gray-700">
+                    <li>• Never expose API keys in frontend code</li>
+                    <li>• Store keys in environment variables</li>
+                    <li>• Always use HTTPS in production</li>
+                    <li>• Rotate API keys periodically</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white text-center">
+            <h2 class="text-3xl font-bold mb-4">Need Help?</h2>
+            <p class="text-lg mb-6">Check your admin dashboard for API usage stats and transaction logs</p>
+            <a href="/" class="inline-block px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100">
+                Go to Admin Panel →
+            </a>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-white py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">BharatPay API v2.0 - Professional UPI Payment Gateway</p>
+        </div>
+    </footer>
+</body>
+</html>
